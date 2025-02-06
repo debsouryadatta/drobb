@@ -1,103 +1,132 @@
-import * as React from 'react'
-import { TextInput, TouchableOpacity, View, Text, KeyboardAvoidingView, Platform } from 'react-native'
-import { useSignUp } from '@clerk/clerk-expo'
-import { useRouter, Link } from 'expo-router'
-import { Ionicons } from '@expo/vector-icons'
-import { StatusBar } from 'expo-status-bar'
-import { LinearGradient } from 'expo-linear-gradient'
-import Toast from 'react-native-toast-message';
+import * as React from "react";
+import {
+  TextInput,
+  TouchableOpacity,
+  View,
+  Text,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { useRouter, Link } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
+import { LinearGradient } from "expo-linear-gradient";
+import Toast from "react-native-toast-message";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const BASE_URL = "http://localhost:3000";
 
 export default function SignUpScreen() {
-  const { isLoaded, signUp, setActive } = useSignUp()
-  const router = useRouter()
+  const router = useRouter();
 
-  const [username, setUsername] = React.useState('')
-  const [emailAddress, setEmailAddress] = React.useState('')
-  const [password, setPassword] = React.useState('')
-  const [pendingVerification, setPendingVerification] = React.useState(false)
-  const [code, setCode] = React.useState('')
-  const [showPassword, setShowPassword] = React.useState(false)
+  const [username, setUsername] = React.useState("");
+  const [emailAddress, setEmailAddress] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [pendingVerification, setPendingVerification] = React.useState(false);
+  const [code, setCode] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
 
   const onSignUpPress = async () => {
-    if (!isLoaded) {
-      return
-    }
-
     try {
-      await signUp.create({
-        emailAddress,
-        password,
-      })
+      const response = await fetch(`${BASE_URL}/api/auth/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: emailAddress,
+          password,
+          name: username,
+          gender: "OTHER", // Default value;
+          birthDate: "2000-01-01", // Default value;
+        }),
+      });
 
-      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' })
+      const responseText = await response.text();
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (err) {
+        console.error("JSON parse error:", responseText);
+        throw new Error(responseText || "Server error");
+      }
 
-      setPendingVerification(true)
-    } catch (err: any) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
-      console.error(JSON.stringify(err, null, 2))
+      if (!response.ok) {
+        throw new Error(data.message || "Signup failed");
+      }
+
       Toast.show({
-        type: 'error',
-        text1: 'Something went wrong',
-        text2: 'Please try again later',
-      })
+        type: "success",
+        text1: "Signup Successful",
+        text2: data.message,
+      });
+      setPendingVerification(true);
+    } catch (err: any) {
+      console.error(err);
+      Toast.show({
+        type: "error",
+        text1: "Signup Error",
+        text2: err.message || "Something went wrong",
+      });
     }
-  }
+  };
 
   const onPressVerify = async () => {
-    if (!isLoaded) {
-      return
-    }
-
     try {
-      const completeSignUp = await signUp.attemptEmailAddressVerification({
-        code,
-      })
+      const response = await fetch(`${BASE_URL}/api/auth/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: emailAddress,
+          otp: code,
+        }),
+      });
 
-      if (completeSignUp.status === 'complete') {
-        await setActive({ session: completeSignUp.createdSessionId })
-        router.replace('/')
-      } else {
-        console.error(JSON.stringify(completeSignUp, null, 2))
+      const responseText = await response.text();
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (err) {
+        console.error("JSON parse error:", responseText);
+        throw new Error(responseText || "Server error");
       }
-    } catch (err: any) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
-      console.error(JSON.stringify(err, null, 2))
-      Toast.show({
-        type: 'error',
-        text1: 'Something went wrong',
-        text2: 'Please try again later',
-      })
-    }
-  }
 
-  const showButtonDisabled = () => {
-    Toast.show({
-      type: 'info',
-      text1: 'Not available yet',
-      text2: 'Try out with email and password',
-      visibilityTime: 3000,
-      autoHide: true,
-    })
-  }
+      if (!response.ok) {
+        throw new Error(data.message || "OTP Verification failed");
+      }
+
+      //jwt token is saved here- devo sourya just call get token from async storage for future routes/middleware
+      await AsyncStorage.setItem("token", data.token);
+      Toast.show({
+        type: "success",
+        text1: "Verification Successful",
+        text2: data.message,
+      });
+      router.replace("/(inner)/home");
+    } catch (err: any) {
+      console.error(err);
+      Toast.show({
+        type: "error",
+        text1: "Verification Error",
+        text2: err.message || "Something went wrong",
+      });
+    }
+  };
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1"
     >
       <LinearGradient
-        colors={['#111111', '#111111', '#00d5be']}
+        colors={["#111111", "#111111", "#00d5be"]}
         className="flex-1"
       >
         <View className="flex-1 px-5">
           <StatusBar style="light" />
-          
+
           {!pendingVerification && (
             <>
-              <TouchableOpacity 
-                onPress={() => router.back()} 
+              <TouchableOpacity
+                onPress={() => router.back()}
                 className="mt-14 w-9 h-9 rounded-full bg-[#1A1A1A]/50 items-center justify-center"
               >
                 <Ionicons name="chevron-back" size={20} color="#666666" />
@@ -128,10 +157,14 @@ export default function SignUpScreen() {
                       value={username}
                       onChangeText={setUsername}
                       autoCapitalize="none"
-                      style={{ fontWeight: '400' }}
+                      style={{ fontWeight: "400" }}
                     />
                     <View className="absolute left-4 top-4">
-                      <Ionicons name="person-outline" size={20} color="#666666" />
+                      <Ionicons
+                        name="person-outline"
+                        size={20}
+                        color="#666666"
+                      />
                     </View>
                   </View>
                 </View>
@@ -149,7 +182,7 @@ export default function SignUpScreen() {
                       onChangeText={setEmailAddress}
                       autoCapitalize="none"
                       keyboardType="email-address"
-                      style={{ fontWeight: '400' }}
+                      style={{ fontWeight: "400" }}
                     />
                     <View className="absolute left-4 top-4">
                       <Ionicons name="mail-outline" size={20} color="#666666" />
@@ -169,19 +202,23 @@ export default function SignUpScreen() {
                       value={password}
                       onChangeText={setPassword}
                       secureTextEntry={!showPassword}
-                      style={{ fontWeight: '400' }}
+                      style={{ fontWeight: "400" }}
                     />
                     <View className="absolute left-4 top-4">
-                      <Ionicons name="lock-closed-outline" size={20} color="#666666" />
+                      <Ionicons
+                        name="lock-closed-outline"
+                        size={20}
+                        color="#666666"
+                      />
                     </View>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       onPress={() => setShowPassword(!showPassword)}
                       className="absolute right-4 top-4"
                     >
-                      <Ionicons 
-                        name={showPassword ? "eye-off-outline" : "eye-outline"} 
-                        size={20} 
-                        color="#666666" 
+                      <Ionicons
+                        name={showPassword ? "eye-off-outline" : "eye-outline"}
+                        size={20}
+                        color="#666666"
                       />
                     </TouchableOpacity>
                   </View>
@@ -192,7 +229,9 @@ export default function SignUpScreen() {
                 onPress={onSignUpPress}
                 className="h-[52px] bg-gradient-to-r from-[#00d5be] to-[#00bcd4] rounded-xl items-center justify-center mt-8 shadow-lg shadow-cyan-500/20"
               >
-                <Text className="text-white font-bold text-base">Create Account</Text>
+                <Text className="text-white font-bold text-base">
+                  Create Account
+                </Text>
               </TouchableOpacity>
 
               <View className="flex-row justify-center items-center mt-6 space-x-1">
@@ -215,29 +254,35 @@ export default function SignUpScreen() {
                 Please enter the verification code sent to your email
               </Text>
               <View className="relative">
-                <TextInput 
-                  value={code} 
-                  placeholder="Enter verification code" 
+                <TextInput
+                  value={code}
+                  placeholder="Enter verification code"
                   onChangeText={setCode}
                   className="h-[52px] bg-[#1A1A1A]/50 rounded-xl px-4 text-white border border-[#333333] text-base pl-11"
                   placeholderTextColor="#666666"
-                  style={{ fontWeight: '400' }}
+                  style={{ fontWeight: "400" }}
                   keyboardType="number-pad"
                 />
                 <View className="absolute left-4 top-4">
-                  <Ionicons name="shield-checkmark-outline" size={20} color="#666666" />
+                  <Ionicons
+                    name="shield-checkmark-outline"
+                    size={20}
+                    color="#666666"
+                  />
                 </View>
               </View>
               <TouchableOpacity
                 onPress={onPressVerify}
                 className="h-[52px] bg-gradient-to-r from-[#00d5be] to-[#00bcd4] rounded-xl items-center justify-center mt-4 shadow-lg shadow-cyan-500/20"
               >
-                <Text className="text-white font-bold text-base">Verify Email</Text>
+                <Text className="text-white font-bold text-base">
+                  Verify Email
+                </Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
       </LinearGradient>
     </KeyboardAvoidingView>
-  )
+  );
 }

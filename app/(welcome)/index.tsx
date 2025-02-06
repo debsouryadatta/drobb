@@ -1,16 +1,20 @@
-import { View, Text, Pressable, Image, SafeAreaView, StatusBar } from 'react-native';
-import { Link, SplashScreen } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useFonts } from 'expo-font';
-import { useEffect } from 'react';
-import { useAuth } from '@clerk/clerk-expo'
+import {
+  View,
+  Text,
+  Pressable,
+  Image,
+  SafeAreaView,
+  StatusBar,
+} from "react-native";
+import { Link, SplashScreen } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import { useFonts } from "expo-font";
+import { useEffect } from "react";
 
 export default function WelcomeScreen() {
-  const { signOut } = useAuth()
-
   const [loaded, error] = useFonts({
-    'SpaceMono-Regular': require('../../assets/fonts/SpaceMono-Regular.ttf'),
-    'LuckiestGuy-Regular': require('../../assets/fonts/LuckiestGuy-Regular.ttf'),
+    "SpaceMono-Regular": require("../../assets/fonts/SpaceMono-Regular.ttf"),
+    "LuckiestGuy-Regular": require("../../assets/fonts/LuckiestGuy-Regular.ttf"),
   });
 
   useEffect(() => {
@@ -25,12 +29,9 @@ export default function WelcomeScreen() {
 
   return (
     <SafeAreaView className="flex-1">
-      <StatusBar
-        barStyle="light-content"
-        backgroundColor="#4B6BFB"
-      />
+      <StatusBar barStyle="light-content" backgroundColor="#4B6BFB" />
       <LinearGradient
-        colors={['#111111', '#111111', '#00d5be']}
+        colors={["#111111", "#111111", "#00d5be"]}
         className="flex-1"
       >
         <View className="flex-1 px-6">
@@ -46,7 +47,7 @@ export default function WelcomeScreen() {
                 resizeMode="contain"
               />
             </View>
-            
+
             {/* Logo and Text */}
             <View className="items-center space-y-3">
               <View className="flex-row items-center space-x-2">
@@ -58,9 +59,7 @@ export default function WelcomeScreen() {
                   drobb
                 </Text> */}
               </View>
-              <Text 
-                className="text-gray-400 text-base text-center"
-              >
+              <Text className="text-gray-400 text-base text-center">
                 Connect with friends, share moments, and explore stories
               </Text>
             </View>
@@ -68,30 +67,18 @@ export default function WelcomeScreen() {
             {/* Get Started Button */}
             <Link href="/sign-up" asChild>
               <Pressable className="w-full bg-[#00d5be] py-4 rounded-xl mt-12">
-                <Text 
-                  className="text-white text-center text-lg font-extrabold"
-                >
+                <Text className="text-white text-center text-lg font-extrabold">
                   Get Started
                 </Text>
               </Pressable>
             </Link>
             <Link href="/sign-in" asChild>
               <Pressable className="w-full bg-[#00d5be] py-4 rounded-xl mt-6">
-                <Text 
-                  className="text-white text-center text-lg font-extrabold"
-                >
+                <Text className="text-white text-center text-lg font-extrabold">
                   Sign In
                 </Text>
               </Pressable>
             </Link>
-
-              {/* <Pressable onPress={() => signOut()} className="w-full bg-[#00d5be] py-4 rounded-xl mt-6">
-                <Text 
-                  className="text-white text-center text-lg font-extrabold"
-                >
-                  Sign out
-                </Text>
-              </Pressable> */}
           </View>
         </View>
       </LinearGradient>
