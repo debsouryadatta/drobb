@@ -31,7 +31,7 @@ export default function WelcomeScreen() {
     <SafeAreaView className="flex-1">
       <StatusBar barStyle="light-content" backgroundColor="#4B6BFB" />
       <LinearGradient
-        colors={["#111111", "#111111", "#00d5be"]}
+        colors={["#111111", "#111111", "#FFFFFF"]}
         className="flex-1"
       >
         <View className="flex-1 px-6">
@@ -41,7 +41,7 @@ export default function WelcomeScreen() {
             <View className="">
               <Image
                 source={{
-                  uri: "https://res.cloudinary.com/diyxwdtjd/image/upload/v1738073291/projects/Screenshot_2025-01-28_at_7.26.51_PM-removebg-preview_xqiswr.png",
+                  uri: "https://res.cloudinary.com/diyxwdtjd/image/upload/v1738073291/projects/white-drobb-logo.png",
                 }}
                 className="w-48 h-48 mb-[-30px]"
                 resizeMode="contain"
@@ -66,15 +66,15 @@ export default function WelcomeScreen() {
 
             {/* Get Started Button */}
             <Link href="/sign-up" asChild>
-              <Pressable className="w-full bg-[#00d5be] py-4 rounded-xl mt-12">
-                <Text className="text-white text-center text-lg font-extrabold">
+              <Pressable className="w-full bg-white py-4 rounded-xl mt-12">
+                <Text className="text-black text-center text-lg font-extrabold">
                   Get Started
                 </Text>
               </Pressable>
             </Link>
             <Link href="/sign-in" asChild>
-              <Pressable className="w-full bg-[#00d5be] py-4 rounded-xl mt-6">
-                <Text className="text-white text-center text-lg font-extrabold">
+              <Pressable className="w-full bg-white py-4 rounded-xl mt-6">
+                <Text className="text-black text-center text-lg font-extrabold">
                   Sign In
                 </Text>
               </Pressable>

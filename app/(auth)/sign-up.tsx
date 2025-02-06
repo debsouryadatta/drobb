@@ -14,8 +14,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const BASE_URL = "http://localhost:3000";
-
 export default function SignUpScreen() {
   const router = useRouter();
 
@@ -28,7 +26,7 @@ export default function SignUpScreen() {
 
   const onSignUpPress = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/api/auth/signup`, {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -71,7 +69,7 @@ export default function SignUpScreen() {
 
   const onPressVerify = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/api/auth/verify-otp`, {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/auth/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -100,7 +98,7 @@ export default function SignUpScreen() {
         text1: "Verification Successful",
         text2: data.message,
       });
-      router.replace("/(inner)/home");
+      router.replace("/onboarding");
     } catch (err: any) {
       console.error(err);
       Toast.show({
@@ -117,7 +115,7 @@ export default function SignUpScreen() {
       className="flex-1"
     >
       <LinearGradient
-        colors={["#111111", "#111111", "#00d5be"]}
+        colors={["#111111", "#111111", "#FFFFFF"]}
         className="flex-1"
       >
         <View className="flex-1 px-5">
@@ -227,9 +225,9 @@ export default function SignUpScreen() {
 
               <TouchableOpacity
                 onPress={onSignUpPress}
-                className="h-[52px] bg-gradient-to-r from-[#00d5be] to-[#00bcd4] rounded-xl items-center justify-center mt-8 shadow-lg shadow-cyan-500/20"
+                className="h-[52px] bg-white rounded-xl items-center justify-center mt-8 shadow-lg shadow-cyan-500/20"
               >
-                <Text className="text-white font-bold text-base">
+                <Text className="text-black font-bold text-base">
                   Create Account
                 </Text>
               </TouchableOpacity>
@@ -273,9 +271,9 @@ export default function SignUpScreen() {
               </View>
               <TouchableOpacity
                 onPress={onPressVerify}
-                className="h-[52px] bg-gradient-to-r from-[#00d5be] to-[#00bcd4] rounded-xl items-center justify-center mt-4 shadow-lg shadow-cyan-500/20"
+                className="h-[52px] bg-white rounded-xl items-center justify-center mt-4 shadow-lg shadow-cyan-500/20"
               >
-                <Text className="text-white font-bold text-base">
+                <Text className="text-black font-bold text-base">
                   Verify Email
                 </Text>
               </TouchableOpacity>

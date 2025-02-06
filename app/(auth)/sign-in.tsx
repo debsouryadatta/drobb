@@ -14,8 +14,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const BASE_URL = "http://localhost:3000";
-
 export default function SignInScreen() {
   const router = useRouter();
 
@@ -25,7 +23,7 @@ export default function SignInScreen() {
 
   const onSignInPress = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/api/auth/login`, {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -49,7 +47,7 @@ export default function SignInScreen() {
 
       //jwt token is saved here- devo sourya just call get token from async storage for future routes/middleware
       await AsyncStorage.setItem("token", data.token);
-      router.replace("/(inner)/home");
+      router.replace("/home");
     } catch (err: any) {
       console.error(err);
       Toast.show({
@@ -66,7 +64,7 @@ export default function SignInScreen() {
       className="flex-1"
     >
       <LinearGradient
-        colors={["#111111", "#111111", "#00d5be"]}
+        colors={["#111111", "#111111", "#FFFFFF"]}
         className="flex-1"
       >
         <View className="flex-1 px-5">
@@ -150,9 +148,9 @@ export default function SignInScreen() {
 
           <TouchableOpacity
             onPress={onSignInPress}
-            className="h-[52px] bg-gradient-to-r from-[#00d5be] to-[#00bcd4] rounded-xl items-center justify-center mt-8 shadow-lg shadow-cyan-500/20"
+            className="h-[52px] bg-white rounded-xl items-center justify-center mt-8 shadow-lg shadow-cyan-500/20"
           >
-            <Text className="text-white font-bold text-base">Sign in</Text>
+            <Text className="text-black font-bold text-base">Sign in</Text>
           </TouchableOpacity>
 
           <View className="flex-row justify-center items-center mt-6 space-x-1">

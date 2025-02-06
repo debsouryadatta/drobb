@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, TextInput, StatusBar, SafeAreaView, ScrollView } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import { Product } from '../../../lib/types';
@@ -6,6 +6,7 @@ import ProductCard from '../../../components/product-card';
 import FilterModal from '../../../components/filter-modal';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
+import axios from 'axios';
 
 // Demo products with Unsplash images
 const DEMO_PRODUCTS: Product[] = [
@@ -29,6 +30,37 @@ const DEMO_PRODUCTS: Product[] = [
 export default function HomeScreen() {
   const [showFilters, setShowFilters] = useState(false);
   const swiperRef = useRef<Swiper<any>>(null);
+  const [products, setProducts] = useState<any>([]);
+
+  const onSwipedLeft = () => {
+    console.log("Swiped left");
+  }
+
+  const onSwipedRight = () => {
+    console.log("Swiped right");
+  }
+
+  const onSwipedTop = () => {
+    console.log("Swiped top");
+  }
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get(`${process.env.EXPO_PUBLIC_BASE_URL}/api/products`);
+        console.log("Products:", response.data);
+        setProducts(response.data.products);
+      } catch (error) {
+        console.log(error);
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'Error fetching products'
+        })
+      }
+    }
+    fetchProducts();
+  }, [])
   
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -104,8 +136,8 @@ export default function HomeScreen() {
       <View className="flex-1 px-4">
         <Swiper
           ref={swiperRef}
-          cards={DEMO_PRODUCTS}
-          renderCard={(product: Product) => (
+          cards={products}
+          renderCard={(product: any) => (
             <ProductCard product={product} />
           )}
           onSwiped={(cardIndex) => {
@@ -120,9 +152,9 @@ export default function HomeScreen() {
           cardVerticalMargin={10}
           cardHorizontalMargin={10}
           containerStyle={{ backgroundColor: 'transparent' }}
-          onSwipedLeft={() => console.log("onSwipedLeft")}
-          onSwipedRight={() => console.log("onSwipedRight")}
-          onSwipedTop={() => console.log("onSwipedTop")}
+          onSwipedLeft={onSwipedLeft}
+          onSwipedRight={onSwipedRight}
+          onSwipedTop={onSwipedTop}
           overlayLabels={{
             left: {
               element: (

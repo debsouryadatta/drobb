@@ -5,8 +5,11 @@ import ProfileDrawer from '@/components/profile-drawer';
 import FriendsDrawer from '@/components/friends-drawer';
 import RequestsReceivedDrawer from '@/components/requests-received-drawer';
 import RequestsSentDrawer from '@/components/requests-sent-drawer';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
+import Toast from "react-native-toast-message";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function ProfileScreen() {
     const router = useRouter();
@@ -14,6 +17,38 @@ export default function ProfileScreen() {
     const [isFriendsDrawerVisible, setIsFriendsDrawerVisible] = useState(false);
     const [isRequestsReceivedDrawerVisible, setIsRequestsReceivedDrawerVisible] = useState(false);
     const [isRequestsSentDrawerVisible, setIsRequestsSentDrawerVisible] = useState(false);
+    const [profile, setProfile] = useState<any>({});
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const token = await AsyncStorage.getItem('token');
+                const response = await axios.get(`${process.env.EXPO_PUBLIC_BASE_URL}/api/profile`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setProfile(response.data);
+                console.log("Profile:", response.data);
+            } catch (error) {
+                console.log("Error fetching profile:", error);
+                Toast.show({
+                    type: "error",
+                    text1: "Error",
+                    text2: "Error fetching profile"
+                })
+            }
+        }
+
+        fetchProfile();
+    }, [])
+
+    const handleSignOut = async () => {
+        try {
+            await AsyncStorage.removeItem('token');
+            router.replace("/sign-in");
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     return (
         <SafeAreaView className="flex-1 bg-white">
@@ -27,8 +62,8 @@ export default function ProfileScreen() {
             {/* Profile Info */}
             <View className="px-4 py-4">
                 <View className="bg-gray-100 rounded-xl p-4">
-                    <Text className="text-black text-lg font-medium">Debsourya Datta</Text>
-                    <Text className="text-gray-500">debsouryadatta@gmail.com</Text>
+                    <Text className="text-black text-lg font-medium">{profile?.profile?.name}</Text>
+                    {/* <Text className="text-gray-500">debsouryadatta@gmail.com</Text> */}
                 </View>
             </View>
 
@@ -99,10 +134,10 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
             </View>
 
-            {/* Delete Account Button */}
+            {/* Sign Out Button */}
             <View className="px-4 mt-4">
-                <TouchableOpacity className="bg-black py-4 rounded-lg">
-                    <Text className="text-white text-center font-medium">Delete Account</Text>
+                <TouchableOpacity onPress={handleSignOut} className="bg-black py-4 rounded-lg">
+                    <Text className="text-white text-center font-medium">Sign Out</Text>
                 </TouchableOpacity>
             </View>
 
