@@ -80,7 +80,7 @@ export default function HomeScreen() {
           throw new Error("No authentication token found");
         }
         await axios.post(
-          `${process.env.EXPO_PUBLIC_BASE_URL}/api/match`,
+          `${process.env.EXPO_PUBLIC_BASE_URL}/api/matches`,
           {
             productId: product.id,
             status: "LIKED",
@@ -108,8 +108,66 @@ export default function HomeScreen() {
     }
   };
 
-  const onSwipedTop = (cardIndex: number) => {
-    console.log("Swiped top");
+  const onSwipedTop = async (cardIndex: number) => {
+    if (cardIndex < products.length) {
+      const product = products[cardIndex];
+
+      //first available size is picked
+      const defaultSize =
+        product.size && product.size.length > 0 ? product.size[0] : "";
+
+      if (!defaultSize) {
+        Toast.show({
+          type: "error",
+          text1: "Size not available",
+          text2:
+            "This product does not have available sizes. Please choose from the product details.",
+        });
+        return;
+      }
+
+      try {
+        const token = await AsyncStorage.getItem("token");
+        if (!token) {
+          Toast.show({
+            type: "error",
+            text1: "Authentication error",
+            text2: "User not logged in",
+          });
+          return;
+        }
+
+        const payload = {
+          productId: product.id,
+          quantity: 1,
+          size: defaultSize,
+        };
+
+        const response = await axios.post(
+          `${process.env.EXPO_PUBLIC_BASE_URL}/api/cart/add`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        Toast.show({
+          type: "success",
+          text1: "Cart Updated",
+          text2: response.data.message,
+        });
+      } catch (error) {
+        console.error("Error adding to cart", error);
+        Toast.show({
+          type: "error",
+          text1: "Add to Cart Failed",
+          text2: "There was a problem adding the item to your cart",
+        });
+      }
+    }
   };
 
   return (

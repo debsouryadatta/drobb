@@ -16,7 +16,7 @@ export default function BookmarkScreen() {
       const token = await AsyncStorage.getItem("token");
       if (!token) throw new Error("Authentication token not found");
       const response = await axios.get(
-        `${process.env.EXPO_PUBLIC_BASE_URL}/api/match`,
+        `${process.env.EXPO_PUBLIC_BASE_URL}/api/matches`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
