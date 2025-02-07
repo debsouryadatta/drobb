@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -6,16 +7,48 @@ import {
   SafeAreaView,
   StatusBar,
 } from "react-native";
-import { Link, SplashScreen } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFonts } from "expo-font";
-import { useEffect } from "react";
+import * as SplashScreen from "expo-splash-screen";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import Toast from "react-native-toast-message";
 
 export default function WelcomeScreen() {
+  const router = useRouter();
   const [loaded, error] = useFonts({
     "SpaceMono-Regular": require("../../assets/fonts/SpaceMono-Regular.ttf"),
     "LuckiestGuy-Regular": require("../../assets/fonts/LuckiestGuy-Regular.ttf"),
   });
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+
+        if (token) {
+          // Verify token validity by making a request to the backend
+          const response = await axios.get(
+            `${process.env.EXPO_PUBLIC_BASE_URL}/api/profile`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+
+          if (response.status === 200) {
+            router.replace("/home");
+          }
+        }
+      } catch (error) {
+        console.log("Auth check error:", error);
+        // If token is invalid, remove it
+        await AsyncStorage.removeItem("token");
+      }
+    };
+
+    checkAuthStatus();
+  }, []);
 
   useEffect(() => {
     if (loaded || error) {

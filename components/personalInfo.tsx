@@ -14,12 +14,31 @@ import { Ionicons } from "@expo/vector-icons";
 interface PersonalInfoProps {
   name: string;
   setName: (name: string) => void;
+  dob: string;
+  setDob: (dob: string) => void;
   gender: string;
   setGender: (gender: string) => void;
   onNext: () => void;
 }
 
-export function PersonalInfo({ name, setName, gender, setGender, onNext }: PersonalInfoProps) {
+export function PersonalInfo({
+  name,
+  setName,
+  dob,
+  setDob,
+  gender,
+  setGender,
+  onNext,
+}: PersonalInfoProps) {
+  // Add date validation
+  const isValidDate = (dateString: string) => {
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!regex.test(dateString)) return false;
+
+    const date = new Date(dateString);
+    return date instanceof Date && !isNaN(date.getTime());
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -59,6 +78,29 @@ export function PersonalInfo({ name, setName, gender, setGender, onNext }: Perso
                 />
                 <View className="absolute left-4 h-full justify-center">
                   <Ionicons name="person-outline" size={20} color="#666666" />
+                </View>
+              </View>
+            </View>
+
+            <View>
+              <Text className="text-[#666666] text-[15px] mb-2.5 font-medium">
+                Date of Birth
+              </Text>
+              <View className="relative">
+                <TextInput
+                  className="h-[52px] bg-[#1A1A1A]/50 rounded-xl px-4 text-white border border-[#333333] text-base pl-11"
+                  placeholder="YYYY-MM-DD"
+                  placeholderTextColor="#666666"
+                  value={dob}
+                  onChangeText={(text) => {
+                    if (text.length <= 10) {
+                      setDob(text);
+                    }
+                  }}
+                  keyboardType="numbers-and-punctuation"
+                />
+                <View className="absolute left-4 h-full justify-center">
+                  <Ionicons name="calendar-outline" size={20} color="#666666" />
                 </View>
               </View>
             </View>
