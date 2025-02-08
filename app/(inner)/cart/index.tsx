@@ -7,7 +7,10 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
@@ -38,6 +41,7 @@ export default function CartScreen() {
   const [showSizes, setShowSizes] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const fetchCart = async () => {
     try {
@@ -145,14 +149,9 @@ export default function CartScreen() {
     setShowSizes(null);
   };
 
-  // Instead of a toast, navigate to the CheckoutScreen (which includes Razorpay details and order summary)
+  // Navigate to CheckoutScreen (which includes order summary)
   const handleCheckout = () => {
     router.push("/order/CheckoutScreen");
-  };
-
-  // Handler for viewing past orders (navigates to the OrderHistoryScreen)
-  const handleViewPastOrders = () => {
-    router.push("/order/OrderHistoryScreen");
   };
 
   // Calculate the subtotal of the cart.
@@ -187,17 +186,20 @@ export default function CartScreen() {
         </View>
 
         {/* Subtotal */}
-        <View className="px-4 py-3 border-b border-gray-200">
-          <Text className="text-lg">
-            Subtotal: <Text className="font-semibold">₹{subtotal}</Text>
+        <View className="px-4 py-3 mt-4 border-b border-gray-200">
+          <Text className="text-base font-normal">
+            Subtotal: <Text className="font-bold">₹{subtotal}</Text>
           </Text>
         </View>
 
         {/* Cart Items */}
         <ScrollView
-          className="flex-1 mb-20"
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          className="flex-1"
+          showsVerticalScrollIndicator={true}
+          contentContainerStyle={{
+            paddingTop: 10,
+            paddingBottom: insets.bottom + 200,
+          }}
         >
           {cartItems.length === 0 ? (
             <Text className="text-center text-gray-600 mt-4">
@@ -226,8 +228,11 @@ export default function CartScreen() {
                         ₹{item.product.price * item.quantity}
                       </Text>
                     </View>
-                    {/* Remove button */}
-                    <TouchableOpacity onPress={() => removeCartItem(item.id)}>
+                    {/* Remove button with added margin */}
+                    <TouchableOpacity
+                      onPress={() => removeCartItem(item.id)}
+                      className="ml-4"
+                    >
                       <Ionicons name="trash-outline" size={20} color="#666" />
                     </TouchableOpacity>
                   </View>
@@ -256,9 +261,9 @@ export default function CartScreen() {
                       </View>
                     </TouchableOpacity>
 
-                    {/* Size Options */}
+                    {/* Size Options Dropdown */}
                     {showSizes === item.id && (
-                      <View className="mt-2 bg-gray-100 rounded-lg p-2">
+                      <View className="mt-2 bg-white rounded-lg p-2 border border-gray-300 shadow-sm">
                         <ScrollView
                           horizontal
                           showsHorizontalScrollIndicator={false}
@@ -322,26 +327,60 @@ export default function CartScreen() {
           )}
         </ScrollView>
 
-        {/* Bottom Action Buttons */}
-        <View className="absolute bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 mb-16">
-          <View className="flex-row justify-between space-x-4">
+        {/* Enhanced Bottom Action Button */}
+        <View
+          style={{ bottom: insets.bottom + 85 }}
+          className="absolute left-0 right-0 bg-white p-4 border-t border-gray-200"
+        >
+          {cartItems.length > 0 ? (
+            <View className="space-y-3">
+              {/* Order Summary */}
+              <View className="space-y-2 mb-2">
+                <View className="flex-row justify-between">
+                  <Text className="text-base font-normal">Subtotal</Text>
+                  <Text className="font-bold text-base">₹{subtotal}</Text>
+                </View>
+                <View className="flex-row justify-between">
+                  <Text className="text-base font-normal">Delivery</Text>
+                  <Text className="font-bold text-base">
+                    ₹{subtotal > 1000 ? "0" : "99"}
+                  </Text>
+                </View>
+                <View className="flex-row justify-between pt-2 border-t border-gray-200">
+                  <Text className="font-bold text-base">Total</Text>
+                  <Text className="font-bold text-base">
+                    ₹{subtotal > 1000 ? subtotal : subtotal + 99}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Proceed to Checkout Button */}
+              <TouchableOpacity
+                onPress={handleCheckout}
+                className="bg-black py-4 rounded-full shadow-sm active:bg-gray-800"
+              >
+                <View className="flex-row justify-center items-center space-x-2">
+                  <Text className="text-white text-center font-semibold text-lg">
+                    Proceed to Checkout
+                  </Text>
+                  <Ionicons name="arrow-forward" size={20} color="white" />
+                </View>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            // Empty Cart Action: Continue Shopping only
             <TouchableOpacity
-              onPress={handleViewPastOrders}
-              className="flex-1 bg-gray-800 py-4 rounded-xl shadow-lg"
+              onPress={() => router.push("/")}
+              className="bg-black py-4 rounded-full shadow-sm active:bg-gray-800"
             >
-              <Text className="text-white text-center font-medium">
-                Past Orders
-              </Text>
+              <View className="flex-row justify-center items-center space-x-2">
+                <Text className="text-white text-center font-semibold">
+                  Continue Shopping
+                </Text>
+                <Ionicons name="cart-outline" size={20} color="white" />
+              </View>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleCheckout}
-              className="flex-1 bg-black py-4 rounded-xl shadow-lg"
-            >
-              <Text className="text-white text-center font-medium">
-                Checkout
-              </Text>
-            </TouchableOpacity>
-          </View>
+          )}
         </View>
       </View>
     </SafeAreaView>
